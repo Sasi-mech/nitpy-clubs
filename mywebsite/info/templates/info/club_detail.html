@@ -1,0 +1,440 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ club.name }} - Club Detail</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #001f3f, #003366);
+            margin: 0;
+            padding: 0;
+            color: #ffffff;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #ffffff;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .club-logo {
+            max-width: 200px;
+            display: block;
+            margin: 0 auto 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .club-description {
+            text-align: left;
+            font-size: 1.2rem;
+            color: #dddddd;
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+
+        /* Gallery Section */
+        .gallery-section {
+            margin-top: 40px;
+            position: relative;
+        }
+
+        .gallery-header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .gallery-wrapper {
+            position: relative;
+        }
+
+        .gallery-container {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            gap: 15px;
+            padding-bottom: 20px;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .gallery-container::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .gallery-group {
+            display: flex;
+            flex: 0 0 calc(100% - 40px);
+            scroll-snap-align: start;
+            gap: 15px;
+            padding: 0 20px;
+        }
+
+        .gallery-item {
+            flex: 1;
+            min-width: 0;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Scroll arrows */
+        .scroll-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            border: none;
+            color: white;
+            font-size: 20px;
+        }
+
+        .scroll-arrow:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .scroll-arrow.left {
+            left: -20px;
+        }
+
+        .scroll-arrow.right {
+            right: -20px;
+        }
+
+        .scroll-arrow.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Lightbox Modal */
+        .lightbox-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .lightbox-img {
+            max-height: 80vh;
+            max-width: 90vw;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            transform: translateY(-50%);
+        }
+
+        .lightbox-btn {
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 20px;
+            transition: background 0.3s ease;
+        }
+
+        .lightbox-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        footer {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #ffffff;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+
+        footer p {
+            margin: 0;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .gallery-group {
+                flex: 0 0 100%;
+            }
+            
+            .gallery-item img {
+                height: 180px;
+            }
+            
+            .scroll-arrow.left {
+                left: 0;
+            }
+            
+            .scroll-arrow.right {
+                right: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .gallery-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .gallery-item img {
+                height: 150px;
+            }
+            
+            .scroll-arrow {
+                display: none;
+            }
+            
+            .lightbox-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+                margin: 0 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>{{ club.name }}</h1>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Club Logo -->
+        {% if club.logo %}
+            <img src="{{ club.logo.url }}" alt="{{ club.name }} Logo" class="club-logo">
+        {% else %}
+            <p class="text-muted text-center">No logo available.</p>
+        {% endif %}
+
+        <!-- Club Description -->
+        {% load markdownify %}
+        <div class="club-description">
+            {{ club.formatted_description|safe }}
+        </div>
+
+        <!-- Gallery Section -->
+        <div class="gallery-section">
+            <h2 class="gallery-header">Gallery</h2>
+            <div class="gallery-wrapper">
+                <button class="scroll-arrow left hidden" id="scrollLeft">&#10094;</button>
+                <div class="gallery-container" id="galleryContainer">
+                    {% for image in club.club_images.all %}
+                        {% if forloop.counter0|divisibleby:3 %}
+                            <div class="gallery-group">
+                        {% endif %}
+                        
+                        <div class="gallery-item" data-index="{{ forloop.counter0 }}">
+                            <img src="{{ image.image.url }}" alt="Gallery Image for {{ club.name }}" data-src="{{ image.image.url }}">
+                        </div>
+                        
+                        {% if forloop.counter|divisibleby:3 or forloop.last %}
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <p class="text-muted text-center">No images in the gallery.</p>
+                    {% endfor %}
+                </div>
+                <button class="scroll-arrow right" id="scrollRight">&#10095;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div class="lightbox-modal" id="lightboxModal">
+        <span class="lightbox-close" id="lightboxClose">&times;</span>
+        <div class="lightbox-content">
+            <img class="lightbox-img" id="lightboxImage" src="" alt="">
+            <div class="lightbox-nav">
+                <button class="lightbox-btn" id="lightboxPrev">&#10094;</button>
+                <button class="lightbox-btn" id="lightboxNext">&#10095;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 NITPY Clubs. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gallery scroll arrows
+            const galleryContainer = document.getElementById('galleryContainer');
+            const scrollLeft = document.getElementById('scrollLeft');
+            const scrollRight = document.getElementById('scrollRight');
+            
+            // Lightbox elements
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            const lightboxModal = document.getElementById('lightboxModal');
+            const lightboxImage = document.getElementById('lightboxImage');
+            const lightboxClose = document.getElementById('lightboxClose');
+            const lightboxPrev = document.getElementById('lightboxPrev');
+            const lightboxNext = document.getElementById('lightboxNext');
+            
+            let currentImageIndex = 0;
+            const images = Array.from(galleryItems).map(item => item.querySelector('img').dataset.src);
+            
+            // Update scroll arrows visibility
+            function updateScrollArrows() {
+                scrollLeft.classList.toggle('hidden', galleryContainer.scrollLeft <= 10);
+                scrollRight.classList.toggle('hidden', 
+                    galleryContainer.scrollLeft + galleryContainer.clientWidth >= galleryContainer.scrollWidth - 10);
+            }
+            
+            // Scroll gallery
+            scrollLeft.addEventListener('click', () => {
+                galleryContainer.scrollBy({
+                    left: -galleryContainer.offsetWidth,
+                    behavior: 'smooth'
+                });
+            });
+            
+            scrollRight.addEventListener('click', () => {
+                galleryContainer.scrollBy({
+                    left: galleryContainer.offsetWidth,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Check scroll position on load and scroll
+            galleryContainer.addEventListener('scroll', updateScrollArrows);
+            window.addEventListener('resize', updateScrollArrows);
+            updateScrollArrows();
+            
+            // Open lightbox when image is clicked
+            galleryItems.forEach((item, index) => {
+                item.addEventListener('click', () => {
+                    currentImageIndex = index;
+                    updateLightboxImage();
+                    lightboxModal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+            
+            // Close lightbox
+            lightboxClose.addEventListener('click', () => {
+                lightboxModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+            
+            // Close when clicking outside image
+            lightboxModal.addEventListener('click', (e) => {
+                if (e.target === lightboxModal) {
+                    lightboxModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+            
+            // Navigation
+            lightboxPrev.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                updateLightboxImage();
+            });
+            
+            lightboxNext.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                updateLightboxImage();
+            });
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (lightboxModal.style.display === 'flex') {
+                    if (e.key === 'Escape') {
+                        lightboxModal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    } else if (e.key === 'ArrowLeft') {
+                        currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                        updateLightboxImage();
+                    } else if (e.key === 'ArrowRight') {
+                        currentImageIndex = (currentImageIndex + 1) % images.length;
+                        updateLightboxImage();
+                    }
+                }
+            });
+            
+            function updateLightboxImage() {
+                lightboxImage.src = images[currentImageIndex];
+            }
+        });
+    </script>
+</body>
+</html>
